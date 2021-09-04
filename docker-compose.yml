@@ -73,6 +73,8 @@ services:
       KAFKA_SCHEMA_REGISTRY_URL: "schemaregistry:8081"
       #KAFKA_LOG4J_ROOT_LOGLEVEL: INFO
       KAFKA_JMX_PORT: 9991
+    ports: 
+      - 29092:29092
 
   schemaregistry:
     image: confluentinc/cp-schema-registry:5.2.5
