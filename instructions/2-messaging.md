@@ -43,7 +43,8 @@ It is possible to attach a key to each message, in which case the producer guara
 res = producer.produce(topic, value=json.dumps(data))
 ```
 
-### TODO: write here about async, poll() and flush()
+The above method can be modified to include a callback (alias `on_delivery`) argument to pass a function (or lambda) that will be called from `poll()` when the message has been successfully delivered or permanently fails delivery.
+The `flush()` method can be called to poll and register all remaining callbacks (until the length is 0)
 
 
 ## Important configurations - Producer Level
@@ -60,3 +61,43 @@ The full set of configurations can be found [here](https://github.com/edenhill/l
 
 The subscriber or consumer implementation can be used to read streams of data from topics in the Kafka cluster.
 
+```python
+consumer.subscribe(TOPIC_NAME)
+msg = consumer.poll(1.0)
+```
+
+The `poll()` method consumes a single message, calls callbacks and returns events.
+You can check the returned event for a KafkaMessage object or a KafkaError
+The consumer implementation provides a handy number of functions like `seek()`, `pause()`, `resume()`, `position()` to read message streams as required by the application
+
+## Important configurations - Consumer Level
+
+1. Bootstrap Servers: Same as producer
+
+2. Serializers: Same as producer
+
+3. Consumer Group: 
+
+A consumer group is a group of Kafka consumers (:mindblown:) that share the same group ID.
+As the official documentation for Consumer Group in Kafka says 
+> “If all the consumer instances have the same consumer group, then the records will effectively be load-balanced over the consumer instances.”
+>
+What that effectively means is that all the consumer groups will read messages from different partitions but will effectively work together so as to maintain the offset order for that group.
+
+It is possible (and, recommended) to have separate consumer groups if you would like to read the same data for multiple usecases
+
+4. Commit Offset Semantics:
+
+The offset is a simple integer number that is used by Kafka to maintain the current position of a consumer 
+Whenever a consumer reads a new message(s), the consumer acknowledges by incrementing the offset count to indicate the data has been consumed.
+
+That acknowledgement can be done after a fixed number of ms (`auto.commit.interval.ms`) or once the message is received or once the processing on this message is completed.
+
+This leads to different behaviour of consumers in case of a record being mis-processed.
+If auto-commits are turned on, the message offset might be committed before the mis-processing occurs leading to `best-effort` or `at-most-once` delivery semantics.
+
+However, if the committs are made after the processing is done (successfully), it leads to `atleast-once` delivery guarantee.
+
+Read [this article](https://www.thebookofjoel.com/python-kafka-consumers) to know more about delivery semantics and to learn about another type of semantics called as `exactly-once` semantics
+
+The full set of configurations can be found [here](https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md#configuration-properties)
