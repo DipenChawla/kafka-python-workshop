@@ -21,7 +21,9 @@
 
     * Smoke test your Docker environment, by running : 
 
+        ```
         docker run -p 8080:8080 hello-world
+        ```
 
       You should see: 
 
@@ -36,13 +38,25 @@
           This message shows that your installation appears to be working correctly.
           [...]
 
+  
+
+2. Install docker-compose ([Mac](https://docs.docker.com/compose/install/#install-compose-on-macos), [Windows](https://docs.docker.com/compose/install/#install-compose-on-windows-desktop-systems), [Linux](https://docs.docker.com/compose/install/#install-compose-on-linux-systems))
+
+    * If you're using Docker Desktop, you can skip this as Compose is bundled-in with Docker Desktop
+
+    * Smoke test your installation by running:
+
+      ```
+      docker-compose version
+      ```
+
     * Run docker-compose in detached mode. This will setup a local Kafka broker, a Zookeeper node and a few important peripherals that will be a part of later exercises.
 
-    ```
-    docker-compose up -d
-    ```
+        ```
+        docker-compose up -d
+        ```
 
-2. Create a Python virtualenv 
+3. Create a Python virtualenv 
 
 - for Unix/MacOS
   ```
@@ -58,8 +72,14 @@
 
  #### Installation guide ([link](https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/)) for virtualenv
 
-3. Install requirements for the workshop with 
+4. Install requirements for the workshop with 
 
 ```
 pip install -r requirements.txt
+```
+
+5. Taking down docker containers after the workshop
+
+```
+docker-compose down
 ```
