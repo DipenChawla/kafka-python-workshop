@@ -24,39 +24,39 @@ The full set of configurations can be found [here](http://kafka.apache.org/docum
 
 * Manually adding a topic -
 
-```python
-# create-topic.py
-from helpers import list_topics, create_topic
-topic = "airports-data"
-KAFKA_BOOTSTRAP_SERVERS = "localhost:29092"
+    ```python
+    # create-topic.py
+    from helpers import list_topics, create_topic
+    topic = "airports-data"
+    KAFKA_BOOTSTRAP_SERVERS = "localhost:29092"
 
-print(f"List of topics before creation : {list_topics(KAFKA_BOOTSTRAP_SERVERS=KAFKA_BOOTSTRAP_SERVERS)}\n")
-print(create_topic(KAFKA_BOOTSTRAP_SERVERS, topic))
-print(f"List of topics after creation : {list_topics(KAFKA_BOOTSTRAP_SERVERS=KAFKA_BOOTSTRAP_SERVERS)}\n")
-```
+    print(f"List of topics before creation : {list_topics(KAFKA_BOOTSTRAP_SERVERS=KAFKA_BOOTSTRAP_SERVERS)}\n")
+    print(create_topic(KAFKA_BOOTSTRAP_SERVERS, topic))
+    print(f"List of topics after creation : {list_topics(KAFKA_BOOTSTRAP_SERVERS=KAFKA_BOOTSTRAP_SERVERS)}\n")
+    ```
 
 * Deleting a topic
 
-```python
-# delete_topic.py
-from helpers import list_topics, delete_topic
-topic = "airports-data"
-KAFKA_BOOTSTRAP_SERVERS = "localhost:29092"
+    ```python
+    # delete_topic.py
+    from helpers import list_topics, delete_topic
+    topic = "airports-data"
+    KAFKA_BOOTSTRAP_SERVERS = "localhost:29092"
 
-print(f"List of topics before deletion : {list_topics(KAFKA_BOOTSTRAP_SERVERS=KAFKA_BOOTSTRAP_SERVERS)} \n")
-print(delete_topic(KAFKA_BOOTSTRAP_SERVERS, topic))
-print(f"List of topics after deletion : {list_topics(KAFKA_BOOTSTRAP_SERVERS=KAFKA_BOOTSTRAP_SERVERS)} \n")
-```
+    print(f"List of topics before deletion : {list_topics(KAFKA_BOOTSTRAP_SERVERS=KAFKA_BOOTSTRAP_SERVERS)} \n")
+    print(delete_topic(KAFKA_BOOTSTRAP_SERVERS, topic))
+    print(f"List of topics after deletion : {list_topics(KAFKA_BOOTSTRAP_SERVERS=KAFKA_BOOTSTRAP_SERVERS)} \n")
+    ```
 
 * Get metadata of a topic
 
-```python
-# get_metadata_topic.py
-from helpers import get_metadata_topic
-topic = "airports-data"
-KAFKA_BOOTSTRAP_SERVERS = "localhost:29092"
-print(get_metadata_topic(KAFKA_BOOTSTRAP_SERVERS=KAFKA_BOOTSTRAP_SERVERS, topic=topic))
-```
+    ```python
+    # get_metadata_topic.py
+    from helpers import get_metadata_topic
+    topic = "airports-data"
+    KAFKA_BOOTSTRAP_SERVERS = "localhost:29092"
+    print(get_metadata_topic(KAFKA_BOOTSTRAP_SERVERS=KAFKA_BOOTSTRAP_SERVERS, topic=topic))
+    ```
 
 The response from the create and delete operations returns a Future class, which can be awaited to get the result of the operation
 
@@ -77,25 +77,25 @@ The full set of configurations can be found [here](https://github.com/edenhill/l
 
 * Publishing the airports data to a topic
 
-```python
-#producer.py
-import json
-from helpers import delivery_report, get_kafka_producer
+    ```python
+    #producer.py
+    import json
+    from helpers import delivery_report, get_kafka_producer
 
-KAFKA_BOOTSTRAP_SERVERS = "localhost:29092"
-producer = get_kafka_producer(KAFKA_BOOTSTRAP_SERVERS)
+    KAFKA_BOOTSTRAP_SERVERS = "localhost:29092"
+    producer = get_kafka_producer(KAFKA_BOOTSTRAP_SERVERS)
 
-with open("../data/airports.json") as f:
-    data = json.load(f)
-    for i in data:
-        producer.poll(0)
-        res = producer.produce('airports-data', value=json.dumps(i), on_delivery=delivery_report)
-    producer.flush()
-print("Produced records to topic")
-```
+    with open("../data/airports.json") as f:
+        data = json.load(f)
+        for i in data:
+            producer.poll(0)
+            res = producer.produce('airports-data', value=json.dumps(i), on_delivery=delivery_report)
+        producer.flush()
+    print("Produced records to topic")
+    ```
 
-The above method implements a callback (alias `on_delivery`) argument to pass a function that will be called from `poll()` when the message has been successfully delivered or permanently fails delivery.
-The `flush()` method can be called to poll and register all remaining callbacks (until the length is 0)
+    The above method implements a callback (alias `on_delivery`) argument to pass a function that will be called from `poll()` when the message has been successfully delivered or permanently fails delivery.
+    The `flush()` method can be called to poll and register all remaining callbacks (until the length is 0)
 
 
 # Subscribing to data from a topic
@@ -110,55 +110,58 @@ The subscriber or consumer implementation can be used to read streams of data fr
 
 3. Consumer Group: 
 
-A consumer group is a group of Kafka consumers (:mindblown:) that share the same group ID.
-As the official documentation for Consumer Group in Kafka says 
-> “If all the consumer instances have the same consumer group, then the records will effectively be load-balanced over the consumer instances.”
->
-What that effectively means is that all the consumer groups will read messages from different partitions but will effectively work together so as to maintain the offset order for that group.
+    A consumer group is a group of Kafka consumers (:mindblown:) that share the same group ID.
+    As the official documentation for Consumer Group in Kafka says 
+    > “If all the consumer instances have the same consumer group, then the records will effectively be load-balanced over the consumer instances.”
+    >
+    What that effectively means is that all the consumer groups will read messages from different partitions but will effectively work together so as to maintain the offset order for that group.
 
-It is possible (and, recommended) to have separate consumer groups if you would like to read the same data for multiple usecases
+    It is possible (and, recommended) to have separate consumer groups if you would like to read the same data for multiple usecases
 
 4. Commit Offset Semantics:
 
-The offset is a simple integer number that is used by Kafka to maintain the current position of a consumer 
-Whenever a consumer reads a new message(s), the consumer acknowledges by incrementing the offset count to indicate the data has been consumed.
+    The offset is a simple integer number that is used by Kafka to maintain the current position of a consumer 
+    Whenever a consumer reads a new message(s), the consumer acknowledges by incrementing the offset count to indicate the data has been consumed.
 
-That acknowledgement can be done after a fixed number of ms (`auto.commit.interval.ms`) or once the message is received or once the processing on this message is completed.
+    That acknowledgement can be done after a fixed number of ms (`auto.commit.interval.ms`) or once the message is received or once the processing on this message is completed.
 
-This leads to different behaviour of consumers in case of a record being mis-processed.
-If auto-commits are turned on, the message offset might be committed before the mis-processing occurs leading to `best-effort` or `at-most-once` delivery semantics.
+    This leads to different behaviour of consumers in case of a record being mis-processed.
+    If auto-commits are turned on, the message offset might be committed before the mis-processing occurs leading to `best-effort` or `at-most-once` delivery semantics.
 
-However, if the committs are made after the processing is done (successfully), it leads to `atleast-once` delivery guarantee.
+    However, if the committs are made after the processing is done (successfully), it leads to `atleast-once` delivery guarantee.
 
-Read [this article](https://www.thebookofjoel.com/python-kafka-consumers) to know more about delivery semantics and to learn about another type of semantics called as `exactly-once` semantics
+    Read [this article](https://www.thebookofjoel.com/python-kafka-consumers) to know more about delivery semantics and to learn about another type of semantics called as `exactly-once` semantics
 
-The full set of configurations can be found [here](https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md#configuration-properties)
+    The full set of configurations can be found [here](https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md#configuration-properties)
 
-```python
-import json
-from helpers import get_kafka_consumer
+* Publishing the airports data to a topic
 
-KAFKA_BOOTSTRAP_SERVERS = "localhost:29092"
+    ```python
+    # consumer.py
+    import json
+    from helpers import get_kafka_consumer
 
-consumer = get_kafka_consumer(KAFKA_BOOTSTRAP_SERVERS, "east-coast-dpt")
-TOPIC_NAME = ["airports-data"]
-consumer.subscribe(TOPIC_NAME)
+    KAFKA_BOOTSTRAP_SERVERS = "localhost:29092"
 
-while True:
-    msg = consumer.poll(1.0)
+    consumer = get_kafka_consumer(KAFKA_BOOTSTRAP_SERVERS, "east-coast-dpt")
+    TOPIC_NAME = ["airports-data"]
+    consumer.subscribe(TOPIC_NAME)
 
-    if msg is None:
-        continue
-    if msg.error():
-        print("Consumer error: {}".format(msg.error()))
-        continue
+    while True:
+        msg = consumer.poll(1.0)
 
-    s = json.loads(msg.value())
-    print(s)
-    consumer.commit(asynchronous=False)
-consumer.close()
-```
+        if msg is None:
+            continue
+        if msg.error():
+            print("Consumer error: {}".format(msg.error()))
+            continue
 
-The `poll()` method consumes a single message, calls callbacks and returns events.
-You can check the returned event for a KafkaMessage object or a KafkaError
-The consumer implementation provides a handy number of functions like `seek()`, `pause()`, `resume()`, `position()` to read message streams as required by the application
+        s = json.loads(msg.value())
+        print(s)
+        consumer.commit(asynchronous=False)
+    consumer.close()
+    ```
+
+    The `poll()` method consumes a single message, calls callbacks and returns events.
+    You can check the returned event for a KafkaMessage object or a KafkaError
+    The consumer implementation provides a handy number of functions like `seek()`, `pause()`, `resume()`, `position()` to read message streams as required by the application
