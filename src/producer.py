@@ -24,8 +24,8 @@ producer = get_kafka_producer(KAFKA_BOOTSTRAP_SERVERS)
 
 with open("../data/airports.json") as f:
     data = json.load(f)
-    for i in data:
+    for i in data[:15]:
         producer.poll(0)
-        res = producer.produce('flights-data', value=json.dumps(data), on_delivery=delivery_report)
+        res = producer.produce('monment', value=json.dumps(data), on_delivery=delivery_report)
     producer.flush()
 print("Produced records to topic")
