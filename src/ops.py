@@ -1,6 +1,3 @@
-"""
-We'll write this file in the workshop
-"""
 from src.helpers import list_topics, get_metadata_topic, create_topic, delete_topic
 KAFKA_BOOTSTRAP_SERVERS = "localhost:29092"
 admin_conf = {

@@ -2,12 +2,13 @@
 
 1. Install Docker ([Mac](https://docs.docker.com/docker-for-mac/install/), [Windows](https://docs.docker.com/docker-for-windows/install/), [Linux](https://docs.docker.com/engine/install/)) on your system.
 
-    * Mac/Windows only: in Docker’s advanced settings, increase the memory dedicated to Docker to at least 8GB.
+    * Mac/Windows only: in Docker’s advanced settings, increase the memory dedicated to Docker to at least 4GB.
 
     * Clone the repository here :
 
     ```
     https://github.com/DipenChawla/kafka-python-workshop/tree/main
+    cd kafka-python-workshop
     ```
 
     * Test your docker memory settings
@@ -16,7 +17,7 @@
     docker system info | grep Memory 
     ```
 
-      _Should return a value greater than 8GB - if not, the Kafka stack will probably not work._
+      _Should return a value greater than 4GB - if not, the Kafka stack will probably not work._
 
     * Smoke test your Docker environment, by running : 
 
@@ -40,4 +41,25 @@
     ```
     docker-compose up -d
     ```
-    
+
+2. Create a Python virtualenv 
+
+- for Unix/MacOS
+  ```
+  $(which python3) -m venv newenv/ 
+  source env/bin/activate
+  ```
+
+- for Windows
+  ```
+  py -m venv newenv/
+  .\env\Scripts\activate
+  ```
+
+ #### Installation guide ([link](https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/)) for virtualenv
+
+3. Install requirements for the workshop with 
+
+```
+pip install -r requirements.txt
+```
