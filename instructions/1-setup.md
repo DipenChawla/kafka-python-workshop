@@ -56,7 +56,7 @@
   .\env\Scripts\activate
   ```
 
- Installation guide ([link]((https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/))) for virtualenv
+ #### Installation guide ([link](https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/)) for virtualenv
 
 3. Install requirements for the workshop with 
 
