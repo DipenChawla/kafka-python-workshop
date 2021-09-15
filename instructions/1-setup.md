@@ -56,7 +56,7 @@
   .\env\Scripts\activate
   ```
 
-If you do not have virtualenv on your system, install it with the instructions over [here](https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/)
+ Installation guide ([link]((https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/))) for virtualenv
 
 3. Install requirements for the workshop with 
 
