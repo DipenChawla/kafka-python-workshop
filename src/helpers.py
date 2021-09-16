@@ -1,6 +1,8 @@
 from confluent_kafka import Consumer
 from confluent_kafka.admin import AdminClient, NewTopic
 import time
+from confluent_kafka import SerializingProducer, DeserializingConsumer
+from confluent_kafka.serialization import StringSerializer, StringDeserializer
 
 
 def list_topics(KAFKA_BOOTSTRAP_SERVERS):
@@ -56,3 +58,31 @@ def delete_topic(KAFKA_BOOTSTRAP_SERVERS, topic):
         return "topic deleted!"
     else:
         return resp.get(topic).result()
+
+
+def delivery_report(err, msg):
+    if err is not None:
+        print('Message delivery failed: {}'.format(err))
+    else:
+        print('Message delivered to {} [{}]'.format(msg.topic(), msg.partition()))
+
+
+def get_kafka_producer(KAFKA_BOOTSTRAP_SERVERS):
+    producer_conf = {
+        "bootstrap.servers": KAFKA_BOOTSTRAP_SERVERS,
+        "value.serializer": StringSerializer(),
+    }
+    producer = SerializingProducer(producer_conf)
+    return producer
+
+
+def get_kafka_consumer(KAFKA_BOOTSTRAP_SERVERS, consumer_group):
+    consumer_conf = {
+        "bootstrap.servers": KAFKA_BOOTSTRAP_SERVERS,
+        "group.id": consumer_group,
+        "auto.offset.reset": "earliest",
+        "enable.auto.commit": False,
+        "value.deserializer": StringDeserializer(),
+    }
+    consumer = DeserializingConsumer(consumer_conf)
+    return consumer
