@@ -2,7 +2,8 @@
 
 
 ```
-docker exec -it kafka-python-workshop_ksql-server_1  ksql http://localhost:8088
+docker exec -it ksqldb-cli ksql http://ksqldb-server:8088
+
 ```
 
 
@@ -44,7 +45,7 @@ INSERT INTO MOVEMENTS VALUES ('robin', 'Ilkley');
 ### topic management from  ksql 
 
 
-1. Show that a new topic has been created
+1. Show topic which is present in the kafka cluster.
 
 ```
 ----
@@ -56,10 +57,118 @@ SHOW TOPICS;
 
 ```
 ----
-PRINT 'leeds-users' FROM BEGINNING;
+PRINT 'MOVEMENTS' FROM BEGINNING;
 ----
 ```
 
 
 
-https://github.com/tmcgrath/kafka-connect-examples/blob/master/mysql/mysql-bulk-sink.json
+## Pull vs Push query 
+
+```A push query is a form of query issued by a client that subscribes to a result as it changes in real-time. A good example of a push query is subscribing to a particular user's geographic location.```
+
+```
+SELECT TIMESTAMPTOSTRING(ROWTIME,'yyyy-MM-dd HH:mm:ss','Europe/London') AS EVENT_TS, 
+       PERSON,
+       LOCATION 
+  FROM MOVEMENTS
+  EMIT CHANGES;
+```
+
+```A pull query is a form of query issued by a client that retrieves a result as of "now", like a query against a traditional RDBS.```
+
+```
+select * from AGG_MOVEMENT  where LOCATION = 'Leeds';
+
+```
+> Note :- pull query are most effective on the tables than streams;
+
+
+## filtering the data on runtime 
+```
+SELECT * 
+FROM MOVEMENTS
+WHERE LOCATION='York' 
+```
+
+
+# Create Stream from stream .
+
+
+```
+CREATE STREAM filtered_stream  AS
+   SELECT  *
+    FROM MOVEMENTS
+    WHERE LOCATION='York' 
+    EMIT CHANGES;
+```
+
+
+
+
+
+### What are Streams and Tables?
+
+  > Both Streams and Tables are wrappers on top of Kafka topics, which has continuous never-ending data. But, conceptually these abstractions are different because-
+
+1. Streams represent data in motion capturing events happening in the world, and has the following features-
+
+> Unbounded
+ - Storing a never-ending continuous flow of data and thus Streams are unbounded as they have no limit.
+> Immutable
+  - Any new data that comes in gets appended to the current stream and does not modify any of the existing records, making it completely immutable.
+
+
+1.  While A table represents the data at rest or a materialized view of that stream of events with the latest value of a key and has the following features-
+
+> Bounded
+- Represents a snapshot of the stream at a time, and therefore it has its limits defined.
+> Mutable
+- Any new data(<Key, Value> pair) that comes in gets added to the current table if the table does not have an existing entry with the same key otherwise, the existing record is mutated to have the latest value for that key.
+
+
+
+## Create table on topics 
+
+```
+CREATE TABLE MOVEMENTS_TABLE (
+     PERSON PRIMARY KEY,
+     LOCATION BIGINT
+   ) WITH (
+     KAFKA_TOPIC = 'MOVEMENTS', 
+     VALUE_FORMAT = 'JSON'
+   );
+```
+
+
+## Create and aggregated stream table 
+
+```
+CREATE TABLE AGG_MOVEMENT AS
+   SELECT
+      MOVEMENTS.LOCATION
+      count(*) AS loc_count
+   FROM MOVEMENTS 
+   WINDOW TUMBLING (SIZE 7 DAYS)
+   GROUP BY MOVEMENTS.LOCATION
+   EMIT CHANGES;
+
+```
+
+# ksql api 
+
+ksql comes with rest api end point to interact with it for query both pull based query and push based query 
+
+
+eg : ksql pull based query 
+```
+curl -X POST \
+  http://localhost:8088/query \
+  -H 'cache-control: no-cache' \
+  -H 'content-type: application/vnd.ksql.v1+json' \
+  -H 'postman-token: 4aac9957-5cae-eba9-f5d9-6263e6e7412c' \
+  -d '{
+"ksql": "select * from AGG_MOVEMENT  where LOCATION = '\''Leeds'\'';"
+}'
+
+```
