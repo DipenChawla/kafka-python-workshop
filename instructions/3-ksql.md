@@ -2,7 +2,8 @@
 
 
 ```
-docker exec -it kafka-python-workshop_ksql-server_1  ksql http://localhost:8088
+docker exec -it ksqldb-cli ksql http://ksqldb-server:8088
+
 ```
 
 
@@ -56,7 +57,7 @@ SHOW TOPICS;
 
 ```
 ----
-PRINT 'leeds-users' FROM BEGINNING;
+PRINT 'MOVEMENTS' FROM BEGINNING;
 ----
 ```
 
@@ -77,16 +78,15 @@ SELECT TIMESTAMPTOSTRING(ROWTIME,'yyyy-MM-dd HH:mm:ss','Europe/London') AS EVENT
 ```A pull query is a form of query issued by a client that retrieves a result as of "now", like a query against a traditional RDBS.```
 
 ```
-SELECT TIMESTAMPTOSTRING(ROWTIME,'yyyy-MM-dd HH:mm:ss','Europe/London') AS EVENT_TS, 
-       PERSON,
-       LOCATION 
-  FROM MOVEMENTS WHERE PERSON='robin'
-  
+select * from AGG_MOVEMENT  where LOCATION = 'Leeds';
+
 ```
+> Note :- pull query are most effective on the tables than streams;
 
 
 ## filtering the data on runtime 
-```SELECT * 
+```
+SELECT * 
 FROM MOVEMENTS
 WHERE LOCATION='York' 
 ```
@@ -133,7 +133,7 @@ CREATE STREAM filtered_stream  AS
 ```
 CREATE TABLE MOVEMENTS_TABLE (
      PERSON PRIMARY KEY,
-     LOCATION BIGINT,
+     LOCATION BIGINT
    ) WITH (
      KAFKA_TOPIC = 'MOVEMENTS', 
      VALUE_FORMAT = 'JSON'
@@ -149,12 +149,26 @@ CREATE TABLE AGG_MOVEMENT AS
       MOVEMENTS.LOCATION
       count(*) AS loc_count
    FROM MOVEMENTS 
-   WINDOW TUMBLING (7 DAYS)
+   WINDOW TUMBLING (SIZE 7 DAYS)
    GROUP BY MOVEMENTS.LOCATION
    EMIT CHANGES;
 
 ```
 
+# ksql api 
+
+ksql comes with rest api end point to interact with it for query both pull based query and push based query 
 
 
-https://github.com/tmcgrath/kafka-connect-examples/blob/master/mysql/mysql-bulk-sink.json
+eg : ksql pull based query 
+```
+curl -X POST \
+  http://localhost:8088/query \
+  -H 'cache-control: no-cache' \
+  -H 'content-type: application/vnd.ksql.v1+json' \
+  -H 'postman-token: 4aac9957-5cae-eba9-f5d9-6263e6e7412c' \
+  -d '{
+"ksql": "select * from AGG_MOVEMENT  where LOCATION = '\''Leeds'\'';"
+}'
+
+```
